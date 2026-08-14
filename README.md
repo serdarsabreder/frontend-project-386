@@ -1,2 +1,60 @@
+# Call Booking
+
+A simplified Cal.com-style time-booking service. The calendar owner publishes
+event types (each with a duration in minutes); a guest picks an event type,
+chooses a free 30-minute-grid slot within the next 14 days, and books a call. Two
+bookings can never occupy overlapping time, even across different event types.
+
+Built with the **Design First** approach — the API contract in
+[`spec/main.tsp`](spec/main.tsp) (TypeSpec) is the single source of truth. The
+OpenAPI specification [`api-contract.yaml`](api-contract.yaml) is generated from
+it with `npm run generate` in `spec/`.
+
+- **Contract:** TypeSpec (`spec/`) → OpenAPI (`api-contract.yaml`)
+- **Backend:** Node.js 20 / Express / better-sqlite3 (`server/`)
+- **Frontend:** React + Vite (`client/`)
+
+## Contract
+
+```bash
+cd spec && npm install && npm run generate   # emits api-contract.yaml
+```
+
+## Running locally
+
+```bash
+# Backend (API + serves the built client)
+cd server && npm install && npm start        # http://localhost:3000
+
+# Frontend dev server (hot reload, proxies /api to :3000)
+cd client && npm install && npm run dev      # http://localhost:5173
+```
+
+## Tests
+
+```bash
+cd server && npm test
+```
+
+## Docker
+
+```bash
+docker build -t call-booking .
+docker run -p 3000:3000 -e PORT=3000 call-booking
+```
+
+The server reads `PORT` from the environment and binds to `0.0.0.0`.
+
+## API
+
+| Method & Path | Purpose |
+| :--- | :--- |
+| `GET /api/owner` | Default calendar owner profile (admin part) |
+| `GET /api/event-types` | Published event types (name, description, duration) |
+| `POST /api/event-types` | Owner creates an event type |
+| `GET /api/slots?eventTypeId=&date=` | 30-minute-grid slots for a type, 14-day window, booked ones flagged |
+| `POST /api/bookings` | Book `{eventTypeId, slotId, name, email?}`; `409` on overlap |
+| `GET /api/bookings` | Upcoming meetings across all types, oldest first |
+
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/serdarsabreder/frontend-project-386/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/serdarsabreder/frontend-project-386/actions)
