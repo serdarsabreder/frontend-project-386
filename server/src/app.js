@@ -2,8 +2,10 @@ import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { slotsRouter } from './routes/slots.js';
 import { bookingsRouter } from './routes/bookings.js';
+import { eventTypesRouter } from './routes/eventTypes.js';
+import { ownerRouter } from './routes/owner.js';
+import { slotsRouter } from './routes/slots.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLIENT_DIST = path.join(__dirname, '..', '..', 'client', 'dist');
@@ -12,6 +14,8 @@ export function createApp(db) {
   const app = express();
   app.use(express.json());
 
+  app.use('/api/owner', ownerRouter());
+  app.use('/api/event-types', eventTypesRouter(db));
   app.use('/api/slots', slotsRouter(db));
   app.use('/api/bookings', bookingsRouter(db));
 

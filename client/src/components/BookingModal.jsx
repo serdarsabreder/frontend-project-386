@@ -11,7 +11,7 @@ function formatRange(slot) {
   })} – ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
-export default function BookingModal({ slot, onClose, onBooked }) {
+export default function BookingModal({ eventType, slot, onClose, onBooked }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -23,12 +23,12 @@ export default function BookingModal({ slot, onClose, onBooked }) {
     setSubmitting(true);
     setError(null);
     try {
-      const payload = { slotId: slot.id, name: name.trim() };
+      const payload = { eventTypeId: eventType.id, slotId: slot.id, name: name.trim() };
       if (email.trim()) {
         payload.email = email.trim();
       }
       await createBooking(payload);
-      onBooked(`Booked! See you at ${new Date(slot.start).toLocaleTimeString([], {
+      onBooked(`Booked! ${eventType.name} at ${new Date(slot.start).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       })}.`, 'success');
@@ -49,10 +49,10 @@ export default function BookingModal({ slot, onClose, onBooked }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-        <h2>Book your call</h2>
+        <h2>{eventType.name}</h2>
         <p className="muted">{formatRange(slot)}</p>
 
-        {error && <div className="alert">{error}</div>}
+        {error && <div className="notice error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <label className="field">

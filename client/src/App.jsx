@@ -1,109 +1,87 @@
 import { useCallback, useEffect, useState } from 'react';
-import { listBookings, listSlots } from './api.js';
-import BookingModal from './components/BookingModal.jsx';
+import { getOwner, listEventTypes } from './api.js';
+import BookingPage from './components/BookingPage.jsx';
 import OwnerView from './components/OwnerView.jsx';
-import SlotPicker from './components/SlotPicker.jsx';
-import Toast from './components/Toast.jsx';
-
-function todayLocal() {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
-}
+import TypesPage from './components/TypesPage.jsx';
 
 export default function App() {
-  const [view, setView] = useState('book');
-  const [date, setDate] = useState(todayLocal());
-  const [slots, setSlots] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [toast, setToast] = useState(null);
-  const minDate = todayLocal();
+  const [view, setView] = useState('types'); // 'types' | 'book' | 'owner'
+  const [eventType, setEventType] = useState(null);
+  const [owner, setOwner] = useState(null);
+  const [eventTypes, setEventTypes] = useState([]);
+  const [error, setError] = useState(null);
 
-  const notify = useCallback((message, kind = 'info') => {
-    setToast({ message, kind });
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const [ownerData, typesData] = await Promise.all([getOwner(), listEventTypes()]);
+      setOwner(ownerData);
+      setEventTypes(typesData);
+    } catch (err) {
+      setError(err.message);
+    }
   }, []);
 
-  const loadSlots = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await listSlots(date);
-      setSlots(data.slots);
-    } catch (err) {
-      notify(err.message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [date, notify]);
-
   useEffect(() => {
-    loadSlots();
-  }, [loadSlots]);
+    load();
+  }, [load]);
 
-  const handleBooked = useCallback(
-    (message, kind) => {
-      setSelectedSlot(null);
-      notify(message, kind);
-      loadSlots();
-    },
-    [loadSlots, notify],
-  );
-
-  const switchView = (next) => {
-    setView(next);
-    setSelectedSlot(null);
+  const openTypes = () => {
+    setView('types');
+    setEventType(null);
   };
 
   return (
     <div className="app">
-      <header className="app-header">
+      <header className="topbar">
         <div className="brand">
           <span className="brand-mark">CB</span>
-          <h1>Call Booking</h1>
+          <span className="brand-name">Call Booking</span>
         </div>
         <nav className="tabs">
           <button
             type="button"
-            className={`tab ${view === 'book' ? 'active' : ''}`}
-            onClick={() => switchView('book')}
+            className={`tab ${view === 'types' || view === 'book' ? 'active' : ''}`}
+            onClick={openTypes}
           >
             Book a call
           </button>
           <button
             type="button"
             className={`tab ${view === 'owner' ? 'active' : ''}`}
-            onClick={() => switchView('owner')}
+            onClick={() => {
+              setView('owner');
+              setEventType(null);
+            }}
           >
-            Owner view
+            Owner
           </button>
         </nav>
       </header>
 
       <main className="content">
-        {view === 'book' ? (
-          <SlotPicker
-            date={date}
-            minDate={minDate}
-            onDateChange={setDate}
-            slots={slots}
-            loading={loading}
-            onSelect={setSelectedSlot}
-          />
-        ) : (
-          <OwnerView api={listBookings} />
+        {error && (
+          <div className="notice error">
+            {error}
+            <button type="button" className="notice-action" onClick={load}>
+              Retry
+            </button>
+          </div>
         )}
+        {view === 'types' && (
+          <TypesPage
+            eventTypes={eventTypes}
+            onSelect={(et) => {
+              setEventType(et);
+              setView('book');
+            }}
+          />
+        )}
+        {view === 'book' && eventType && owner && (
+          <BookingPage eventType={eventType} owner={owner} onBack={openTypes} />
+        )}
+        {view === 'owner' && <OwnerView />}
       </main>
-
-      {selectedSlot && (
-        <BookingModal
-          slot={selectedSlot}
-          onClose={() => setSelectedSlot(null)}
-          onBooked={handleBooked}
-        />
-      )}
-
-      {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

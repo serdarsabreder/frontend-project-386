@@ -25,7 +25,7 @@ The development followed a **Design First** approach: the AI agent fixed the API
 
 | Scenario | Agent’s Contribution | Verification Evidence |
 | :--- | :--- | :--- |
-| **Slot Booking Flow** | Generated the full flow: fetching slots (`GET /api/slots`) → UI selection (React `SlotPicker`) → API request (`POST /api/bookings`) → handling success → updating UI state. Includes persistence to SQLite. | Automated integration tests (`server/test/api.test.js`) confirm a booking is saved and appears in `GET /api/bookings`. |
+| **Slot Booking Flow** | Generated the full flow: choosing an event type (`TypesPage`) → fetching its 14-day slot window (`GET /api/slots?eventTypeId=`) → UI selection (Cal.com-style `BookingPage` with a week grid and day/time rows) → API request (`POST /api/bookings`) → handling success → updating UI state. Includes persistence to SQLite. | Automated integration tests (`server/test/api.test.js`) confirm a booking is saved and appears in `GET /api/bookings`. |
 | **Slot Availability (Conflict)** | Implemented the concurrency-safe check to prevent double-booking: a `UNIQUE(start_time)` constraint plus a database transaction. A double-booking attempt maps to HTTP 409 with the exact JSON error `{"error": "This time slot is already reserved."}`. | Tests book the same slot twice and assert the second response is `409` with the contract error message. |
 
 ### ✅ Design Requirements
@@ -79,6 +79,10 @@ Examples of prompts that produced critical parts of the project:
     > "Generate a React component for the booking modal. It calls `POST /api/bookings`. Handle the 409 specifically to show a friendly toast, then refresh the availability so the taken slot turns grey."
     *   *Result:* `client/src/components/BookingModal.jsx` — handles `err.status === 409` with a friendly message and reloads slots.
 
+*   **Prompt for the Cal.com-style redesign:**
+    > "Recreate the booking page from the Cal.com reference: a centered card with an event header (owner name + event-type badge, duration/timezone meta), a 14-day week grid with a highlighted today, a day column with the big date number, and a list of time slots that grey out when taken. Port the exact classes and Inter font."
+    *   *Result:* `client/src/components/BookingPage.jsx` + `client/src/styles.css` — the reference layout (event-header, week-grid, day-time-row, cal-footer) wired to the new `GET /api/slots?eventTypeId=` API, plus a `TypesPage` for event-type selection and an owner dashboard.
+
 ---
 
 ## 5. Commit Strategy & Traceability
@@ -97,7 +101,7 @@ To make the "agent-written" criterion verifiable during the GitHub Actions check
 | :--- | :--- | :--- |
 | **Build & Launch** | ✅ Configured | `hexlet-check` builds the image and starts the container in CI. |
 | **Port Variable** | ✅ Verified | Server reads `process.env.PORT` and binds to `0.0.0.0`. |
-| **Functional Tests** | ✅ Pass (local) | `server/test/api.test.js` — 8 tests covering booking creation, 409 conflict, 400 validation, 404 unknown slot, and upcoming-meetings listing. |
+| **Functional Tests** | ✅ Pass (local) | `server/test/api.test.js` — 12 tests covering owner/event-type listing, event-type creation, the 14-day slot window, slot-date filtering and params, booking creation, 409 duplicate + cross-type overlap, 400 validation, 404 unknown type/slot, and upcoming-meetings listing. |
 
 ---
 

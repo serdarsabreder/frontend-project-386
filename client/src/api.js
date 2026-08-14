@@ -20,8 +20,20 @@ async function request(path, options = {}) {
   return data;
 }
 
-export const listSlots = (date) =>
-  request(`/slots?date=${encodeURIComponent(date)}`);
+export const getOwner = () => request('/owner');
+
+export const listEventTypes = () => request('/event-types');
+
+export const createEventType = (payload) =>
+  request('/event-types', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+export const listSlots = (eventTypeId, date) => {
+  const qs = date ? `&date=${encodeURIComponent(date)}` : '';
+  return request(`/slots?eventTypeId=${encodeURIComponent(eventTypeId)}${qs}`);
+};
 
 export const createBooking = (payload) =>
   request('/bookings', {
