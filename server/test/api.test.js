@@ -115,7 +115,11 @@ test('GET /api/slots returns a 14-day window of correctly sized slots', async ()
     assert.equal(body.eventTypeId, eventType.id);
 
     const dates = new Set(body.slots.map((slot) => slot.date));
-    assert.equal(dates.size, 14, 'window must span 14 distinct dates');
+    // The booking window is 14 calendar days starting today.  When run late in
+    // the UTC day all of today's business-hour slots have already passed and
+    // are filtered out, so the response may contain 13 distinct dates instead
+    // of 14.  Both values are valid.
+    assert.ok(dates.size >= 13 && dates.size <= 14, 'window must span 13–14 distinct dates');
 
     for (const slot of body.slots) {
       assert.equal(slot.id, slot.start);
