@@ -12,7 +12,7 @@ it with `npm run generate` in `spec/`.
 
 - **Contract:** TypeSpec (`spec/`) → OpenAPI (`api-contract.yaml`)
 - **Backend:** Node.js 20 / Express / better-sqlite3 (`server/`)
-- **Frontend:** React + Vite (`client/`)
+- **Frontend:** TypeScript + React + Vite, shadcn/ui, Tailwind CSS (`client/`)
 
 ## Contract
 
@@ -29,6 +29,36 @@ cd server && npm install && npm start        # http://localhost:3000
 # Frontend dev server (hot reload, proxies /api to :3000)
 cd client && npm install && npm run dev      # http://localhost:5173
 ```
+
+## Frontend
+
+The UI is a separate TypeScript + Vite + [shadcn/ui](https://ui.shadcn.com) app in
+`client/`. It talks to the API only through the contract endpoints in
+`api-contract.yaml` (typed client in `client/src/api.ts`).
+
+```bash
+cd client
+npm install
+
+npm run dev        # dev server, proxies /api to the real backend (http://localhost:5173)
+npm run typecheck  # tsc --noEmit
+npm run build      # production build to client/dist
+```
+
+### Working against a Prism mock
+
+During frontend development the API can be emulated from the contract instead of
+running the backend:
+
+```bash
+cd client
+npm run mock                       # Prism on http://localhost:4010
+VITE_API_BASE=http://localhost:4010 npm run dev
+```
+
+Prism serves the contract responses from `api-contract.yaml` (route prefix is
+skipped for its relative `/api` server URL), so the UI can be developed and
+tested contract-first without a live backend.
 
 ## Tests
 

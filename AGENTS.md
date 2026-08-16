@@ -4,7 +4,7 @@
 
 This document details the involvement of the AI agent (OpenCode) in the development of the Call Booking project. It serves as proof that the codebase adheres to the core criterion: *"ideally, all project code is written with the help of an agent."*
 
-**Stack:** Node.js 20 / Express (backend) · React + Vite (frontend) · better-sqlite3 (persistence)
+**Stack:** Node.js 20 / Express (backend) · TypeScript + React + Vite + shadcn/ui + Tailwind (frontend) · better-sqlite3 (persistence) · Prism (contract mock for frontend dev)
 
 ---
 
@@ -82,6 +82,10 @@ Examples of prompts that produced critical parts of the project:
 *   **Prompt for the Cal.com-style redesign:**
     > "Recreate the booking page from the Cal.com reference: a centered card with an event header (owner name + event-type badge, duration/timezone meta), a 14-day week grid with a highlighted today, a day column with the big date number, and a list of time slots that grey out when taken. Port the exact classes and Inter font."
     *   *Result:* `client/src/components/BookingPage.jsx` + `client/src/styles.css` — the reference layout (event-header, week-grid, day-time-row, cal-footer) wired to the new `GET /api/slots?eventTypeId=` API, plus a `TypesPage` for event-type selection and an owner dashboard.
+
+*   **Prompt for the TypeScript + shadcn/ui migration:**
+    > "Migrate the frontend to the selected stack: TypeScript + Vite + shadcn/ui, keeping the Cal.com reference layout. Type the API client against the contract, add a Prism mock script (`npm run mock`) and make the API base configurable via `VITE_API_BASE` so the UI runs against either the real backend or a contract mock."
+    *   *Result:* `client/src/api.ts` (typed contract client), `client/src/components/BookingPage.tsx`, `BookingDialog.tsx`, `TypesPage.tsx`, `OwnerView.tsx` rebuilt on shadcn/ui primitives, `client/tsconfig.json`, `npm run typecheck` and `npm run mock` (Prism) scripts.
 
 ---
 
