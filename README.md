@@ -96,6 +96,19 @@ docker run -p 3000:3000 -e PORT=3000 call-booking
 
 The server reads `PORT` from the environment and binds to `0.0.0.0`.
 
+## Deployment
+
+The app is packaged as a Docker image (see `Dockerfile`) and deployed on
+[Railway](https://railway.app). Railway builds the image from the repository
+`Dockerfile`, injects the `PORT` environment variable at runtime, and exposes
+the service on a public URL:
+
+**Production:** https://frontend-project-386-production-2b58.up.railway.app
+
+The container starts the server automatically (`CMD node server/src/index.js`),
+which reads `process.env.PORT` and binds to `0.0.0.0`, so the same image runs
+identically on a host, in CI, and in the cloud.
+
 ## API
 
 | Method & Path | Purpose |
