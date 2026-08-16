@@ -176,6 +176,7 @@ export default function BookingPage({ eventType, owner, onBack }: BookingPagePro
                   <button
                     key={slot.id}
                     type="button"
+                    data-testid={slot.id}
                     disabled={taken}
                     onClick={() => setBookingSlot(slot)}
                     className={cn(

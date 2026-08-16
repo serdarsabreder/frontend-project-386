@@ -63,8 +63,29 @@ tested contract-first without a live backend.
 ## Tests
 
 ```bash
+# Backend API tests (Node test runner)
 cd server && npm test
+
+# End-to-end user scenarios (Playwright, real browser)
+cd e2e && npm install && npx playwright install chromium && npm run test
 ```
+
+The E2E suite starts the real backend (fresh in-memory DB) and the real
+frontend, then drives the browser through the main booking scenarios — see
+[`docs/user-scenarios.md`](docs/user-scenarios.md).
+
+## CI & Releases
+
+- **CI** (`.github/workflows/ci.yml`): runs the API tests, typechecks and builds
+  the client, and runs the Playwright scenarios on every push/PR.
+- **Conventional Commits**: all commits (including agent-generated ones) follow
+  the [`feat:`, `fix:`, etc.`](https://www.conventionalcommits.org) format. Agent
+  commits keep the `[AI-Generated]` marker in the subject, e.g.
+  `feat: [AI-Generated] add slot booking`.
+- **release-please** (`.github/workflows/release-please.yml`): on every merge to
+  `main` it opens/updates a release PR with a generated `CHANGELOG.md` and a
+  semver bump based on the commit types. Merging that PR publishes a tagged
+  release.
 
 ## Docker
 

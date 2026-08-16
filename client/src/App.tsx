@@ -51,9 +51,18 @@ export default function App() {
     void load();
   }, [load]);
 
+  const refreshTypes = useCallback(async () => {
+    try {
+      setEventTypes(await listEventTypes());
+    } catch {
+      // Keep the current list; the initial load already surfaced errors.
+    }
+  }, []);
+
   const openTypes = () => {
-    setView('types');
     setEventType(null);
+    setView('types');
+    void refreshTypes();
   };
 
   const openOwner = () => {
